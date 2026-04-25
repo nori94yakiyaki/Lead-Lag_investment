@@ -1,0 +1,51 @@
+name: 日米リードラグ 買いポートフォリオ生成
+
+on:
+  # ① 手動実行（スマホ・タブレットのブラウザから随時）
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: "予測対象日 (YYYY-MM-DD)  ※空欄なら本日"
+        required: false
+        default: ""
+
+  # ② 自動実行：平日 6:05 JST（= UTC 21:05 前日）に毎朝実行
+  #    日本市場の寄付き（9:00）前に余裕をもって実行
+  schedule:
+    - cron: "5 21 * * 0-4"   # 月〜金 JST 6:05（日〜木 UTC 21:05）
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: 依存ライブラリをインストール
+        run: pip install -r requirements.txt
+
+      - name: ポートフォリオ生成
+        env:
+          TARGET_DATE: ${{ github.event.inputs.target_date }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python generate_portfolio.py \
+            ${TARGET_DATE:+--date "$TARGET_DATE"} \
+            --summary
+
+      # 結果ファイルをアーティファクトとして保存（7日間ダウンロード可能）
+      - name: 結果をアーティファクトに保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-${{ github.run_id }}
+          path: portfolio_result.md
+          retention-days: 7
