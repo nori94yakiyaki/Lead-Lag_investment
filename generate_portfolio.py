@@ -76,8 +76,8 @@ L      = 60   # ローリングウィンドウ長（営業日）
 K      = 3    # 抽出する主成分数
 K0     = 3    # 事前部分空間の次元
 LAMBDA = 0.9  # 正則化強度（λ）
-N_LONG  = 5   # 買いポートフォリオ銘柄数
-N_SHORT = 5   # 売り（回避）シグナル銘柄数
+N_LONG  = 5   # BUYシグナル上位銘柄数
+N_SHORT = 5   # SELLシグナル下位銘柄数
 
 # 事前情報推定期間（Cfull の推定に使用）
 TRAIN_START = "2010-01-01"
@@ -229,7 +229,7 @@ def calc_order_units(
     mode: str = "equal",
 ) -> tuple:
     """
-    買いポートフォリオの発注口数を計算する。
+    BUYシグナル銘柄の発注口数を計算する。
 
     mode:
       "equal"   論文 式(5) 等ウェイト。各ポジション = budget / N_LONG で口数を算出。
@@ -393,7 +393,7 @@ def print_open_warnings(long_portfolio: pd.DataFrame,
                         reliability: dict,
                         warn_threshold: float = 0.08) -> None:
     """
-    買いポートフォリオの銘柄について Open 価格の信頼性警告を表示する。
+    BUYシグナル銘柄について Open 価格の信頼性警告を表示する。
 
     warn_threshold: この発生率を超えたら警告（デフォルト 8%）
     """
